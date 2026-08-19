@@ -11,15 +11,15 @@
 
 ## Problem
 
-Building a PC requires checking compatibility between multiple components, which can be confusing and time-consuming.
+Building a PC requires checking compatibility between multiple components, which can be confusing and time-consuming and in the recent times PC parts prices have inflated especially RAMs and Storage devices.
 
 ## Why I Made This
 
-I wanted to build a tool that makes PC building easier by automatically checking component compatibility.
+I wanted to build a tool that makes PC building easier by automatically checking component compatibility and help monitor the prices to plan a purchase.
 
 ## What It Solves
 
-BuildForge checks whether selected PC components can work together and identifies compatibility issues.
+BuildForge checks whether selected PC components can work together, identifies compatibility issues, and aims to help users make better purchasing decisions based on component prices.
 
 ## Features
 

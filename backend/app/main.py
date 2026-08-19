@@ -7,7 +7,18 @@ from .compatibility import (check_case_motherboard,check_cpu_motherboard,check_r
 
 from .schemas import PCSelection
 
+from fastapi.middleware.cors import CORSMiddleware # this is the import for the not understood part 
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+) # what does this do did it because the api was working but frontend site wasnt showing anything ans - allow the website running at localhost:5173 to make requests to fastapi
+
 @app.get("/")
 def home():
     return {"message" : "Connected"}

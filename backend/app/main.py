@@ -1,17 +1,13 @@
 from fastapi import FastAPI
 from .database import sessionLocal
 
-from .models import Case
-from .models import Motherboard
-from .models import RAM
-from .models import CPU
-from .models import GPU
-from .models import Storage
-from .models import CPUCooler
-from .models import PSU
+from .models import Case,Motherboard,RAM,CPU,GPU,Storage,CPUCooler,PSU
+
+from .compatibility import (check_case_motherboard,check_cpu_motherboard,check_ram_motherboard,check_gpu_case,check_gpu_motherboard,check_storage_motherboard,check_cooler_cpu,check_cooler_case,check_psu_case,check_psu_gpu)
+
+from .schemas import PCSelection
 
 app = FastAPI()
-
 @app.get("/")
 def home():
     return {"message" : "Connected"}
@@ -147,3 +143,105 @@ def get_parts():
     db.close()
 
     return psus
+
+@app.post("/check")
+def check_compatibility(selection: PCSelection):
+    db = sessionLocal()
+
+    case = db.query(Case).filter(Case.id == selection.case_id).first()
+    motherboard = db.query(Motherboard).filter(Motherboard.id == selection.motherboard_id).first()
+    cpu = db.query(CPU).filter(CPU.id == selection.cpu_id).first()
+    ram = db.query(RAM).filter(RAM.id == selection.ram_id).first()
+    gpu = db.query(GPU).filter(GPU.id == selection.gpu_id).first()
+    storage = db.query(Storage).filter(Storage.id == selection.storage_id).first()
+    cooler = db.query(CPUCooler).filter(CPUCooler.id == selection.cooler_id).first()
+    psu = db.query(PSU).filter(PSU.id == selection.psu_id).first()
+
+
+    if any(x is None for x in [case, motherboard, cpu, ram, gpu, storage, cooler, psu]):
+        missing = []
+        if case is None:
+            missing.append("case")
+        if motherboard is None:
+            missing.append("motherboard")
+        if cpu is None:
+            missing.append("cpu")
+        if ram is None:
+            missing.append("ram")
+        if gpu is None:
+            missing.append("gpu")
+        if storage is None:
+            missing.append("storage")
+        if cooler is None:
+            missing.append("cooler")
+        if psu is None:
+            missing.append("psu")
+        return {
+            "error":"Crucial component missing!",
+            "missing":missing
+            }
+    
+    case_motherboard = check_case_motherboard(case, motherboard)
+    cpu_motherboard = check_cpu_motherboard(cpu, motherboard)
+    ram_motherboard = check_ram_motherboard(ram, motherboard)
+    gpu_case = check_gpu_case(gpu, case)
+    gpu_motherboard = check_gpu_motherboard(gpu, motherboard)
+    storage_motherboard = check_storage_motherboard(storage, motherboard)
+    cooler_cpu = check_cooler_cpu(cooler, cpu)
+    cooler_case = check_cooler_case(cooler, case)
+    psu_case = check_psu_case(psu, case)
+    psu_gpu = check_psu_gpu(psu, gpu)
+
+    compatible = all([
+        case_motherboard,
+        cpu_motherboard,
+        ram_motherboard,
+        gpu_case,
+        gpu_motherboard,
+        storage_motherboard,
+        cooler_cpu,
+        cooler_case,
+        psu_case,
+        psu_gpu
+    ])
+
+    issues = []
+    if case_motherboard is False:
+        issues.append("Motherboard does not fit case")
+    if cpu_motherboard is False:
+        issues.append("CPU and Motherboard not compatible")
+    if ram_motherboard is False:
+        issues.append("RAM and Motherboard not compatible")
+    if gpu_case is False:
+        issues.append("GPU does not fit case")
+    if gpu_motherboard is False:
+        issues.append("GPU and Motherboard not compatible")
+    if storage_motherboard is False:
+        issues.append("Storage and Motherboard not compatible")
+    if cooler_cpu is False:
+        issues.append("CPU and CPU Cooler not compatible")
+    if cooler_case is False:
+        issues.append("Cooler too big for case")
+    if psu_case is False:
+        issues.append("PSU and Case not compatible")
+    if psu_gpu is False:
+        issues.append("PSU and GPU not compatible")
+        
+    db.close()
+
+    return {
+        "compatible":compatible,
+        "checks":{
+            "case_motherboard":case_motherboard,
+            "cpu_motherboard":cpu_motherboard,
+            "ram_motherboard":ram_motherboard,
+            "gpu_case":gpu_case,
+            "gpu_motherboard":gpu_motherboard,
+            "storage_motherboard":storage_motherboard,
+            "cooler_cpu":cooler_cpu,
+            "cooler_case":cooler_case,
+            "psu_case":psu_case,
+            "psu_gpu":psu_gpu
+        },
+        "issues":issues
+    }

@@ -109,3 +109,50 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+.grid-container {
+  display: grid;
+  /* Creates exactly two columns of equal width */
+  grid-template-columns: repeat(2, 1fr); 
+  /* Adds space between the columns and rows */
+  gap: 40px; 
+  /* Keeps the grid centered on your screen */
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.parts{
+  margin-top: 5%;
+  margin-left: 10%;
+  margin-right: 10%;
+  padding: 2% 5% 5% 5%;
+  width: 350px;
+  /* height: 150px; */
+  border: 1px solid gray;
+  border-radius: 5%;
+}
+
+.partItems{
+  border-radius: 10px;
+  margin: 2%;
+  padding: 5% 1% 5% 1%;
+  box-sizing: border-box;
+}
+
+.parts:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px 3px #cca9f7;
+}
+
+.partItems:hover{
+  background-color: #cca9f7;
+  color: #08060d;
+  cursor: pointer;
+}
+
+.partItems.selected {
+  background-color: #4ea8de; /* Turns the background neon blue */
+  color: #000000;            /* Swaps text to black for easy reading */
+  font-weight: bold;
+}
